@@ -8,7 +8,6 @@ const DailyActivityUpdate = ({ salesUserId, salesUserName }) => {
   const [activeTab, setActiveTab] = useState('new'); // 'new' or 'history'
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [showHistory, setShowHistory] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -23,13 +22,6 @@ const DailyActivityUpdate = ({ salesUserId, salesUserName }) => {
 
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Fetch history on mount
-  useEffect(() => {
-    if (salesUserId) {
-      fetchHistory();
-    }
-  }, [salesUserId]);
 
   // Fetch daily activity history
   const fetchHistory = async () => {
@@ -47,6 +39,13 @@ const DailyActivityUpdate = ({ salesUserId, salesUserName }) => {
       setHistory([]);
     }
   };
+
+  // Fetch history on mount
+  useEffect(() => {
+    if (salesUserId) {
+      fetchHistory();
+    }
+  }, [salesUserId, fetchHistory]);
 
   // Handle input change
   const handleInputChange = (e) => {
