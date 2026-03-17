@@ -49,7 +49,7 @@ app.use(cors({
   origin: [
     'http://172.16.100.229:3000',      // Local frontend
     'http://localhost:3000',             // Local development
-    'https://peaceful-cannoli-07d2ed.netlify.app' // Netlify production
+    'https://OVP.netlify.app'            // Netlify production
   ],
   credentials: true
 }));
