@@ -73,7 +73,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch(\\/deleteLogs', {
+      const response = await fetch(`${API_BASE_URL}/deleteLogs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ logIds: Array.from(selectedLogs) })
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch(\\/clearAllLogs', {
+      const response = await fetch(`${API_BASE_URL}/clearAllLogs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -153,7 +153,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch(\\/deleteReasons', {
+      const response = await fetch(`${API_BASE_URL}/deleteReasons`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reasonIds: Array.from(selectedReasons) })
@@ -181,7 +181,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch(\\/deleteReasons', {
+      const response = await fetch(`${API_BASE_URL}/deleteReasons`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reasonIds: [reasonId] })
@@ -209,7 +209,7 @@ const AdminDashboard = () => {
   const handleLogout = async () => {
     try {
       // Log the logout event
-      await fetch(\\/logLogout', {
+      await fetch(`${API_BASE_URL}/logLogout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

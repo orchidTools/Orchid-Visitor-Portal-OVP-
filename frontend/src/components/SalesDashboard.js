@@ -35,7 +35,7 @@ const SalesDashboard = () => {
       }
       // Send reason to backend
       try {
-        const response = await fetch(\\/viewReason', {
+        const response = await fetch(`${API_BASE_URL}/viewReason`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -77,7 +77,7 @@ const SalesDashboard = () => {
       try {
         // Log the logout event to backend
         if (salesUser) {
-          await fetch(\\/logLogout', {
+          await fetch(`${API_BASE_URL}/logLogout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -121,7 +121,7 @@ const SalesDashboard = () => {
   }, [navigate]);
 
   const fetchVisitors = async () => {
-    const response = await fetch(\\/getVisitors');
+    const response = await fetch(`${API_BASE_URL}/getVisitors`);
     const data = await response.json();
     setVisitors(data);
   };
