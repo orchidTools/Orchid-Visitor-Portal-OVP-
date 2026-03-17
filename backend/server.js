@@ -49,7 +49,8 @@ app.use(cors({
   origin: [
     'http://172.16.100.229:3000',      // Local frontend
     'http://localhost:3000',             // Local development
-    'https://orchidvp.netlify.app'      // Netlify production
+    'https://orchidvp.netlify.app',     // Netlify production
+    'https://orchid-visitor-portal-production.up.railway.app'  // Railway backend (update with your actual URL)
   ],
   credentials: true
 }));

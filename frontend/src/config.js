@@ -1,7 +1,10 @@
 // API Configuration
 // For local backend: use your machine's IP address
-// For production: change to your cloud backend URL
+// For production: use Railway or cloud hosting URL
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://172.16.100.229:5000';
+// Railway URL format: https://orchid-visitor-portal-production.up.railway.app
+// Update this with your actual Railway URL
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://orchid-visitor-portal-production.up.railway.app';
 
 export default API_BASE_URL;
