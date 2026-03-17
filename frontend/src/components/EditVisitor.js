@@ -8,17 +8,16 @@ const EditVisitor = () => {
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
+    const fetchVisitor = async () => {
+      const response = await fetch('http://localhost:5000/getVisitors');
+      const visitors = await response.json();
+      const visitor = visitors.find(v => v.id === id);
+      if (visitor) {
+        setFormData(visitor);
+      }
+    };
     fetchVisitor();
   }, [id]);
-
-  const fetchVisitor = async () => {
-    const response = await fetch('http://localhost:5000/getVisitors');
-    const visitors = await response.json();
-    const visitor = visitors.find(v => v.id === id);
-    if (visitor) {
-      setFormData(visitor);
-    }
-  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -20,7 +20,7 @@ function App() {
           <Route path="/visitor-form" element={<VisitorForm />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
-// ...existing code...
+          {/* existing routes */}
           <Route path="/sales-login" element={<SalesLogin />} />
           <Route path="/sales-dashboard" element={<SalesDashboard />} />
           <Route path="/edit-visitor/:id" element={<EditVisitor />} />
