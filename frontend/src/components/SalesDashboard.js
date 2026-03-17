@@ -127,6 +127,37 @@ const SalesDashboard = () => {
     setVisitors(data);
   };
 
+  const handleUpdateVisitorStatus = async (visitorId, status) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/updateVisitorStatus`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+          visitorId, 
+          status,
+          changedBy: salesUser.name
+        })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Update local state
+        setVisitors(visitors.map(v => v.id === visitorId ? { 
+          ...v, 
+          status, 
+          statusChangedBy: salesUser.name,
+          statusChangedAt: new Date()
+        } : v));
+      } else {
+        alert(data.error || "Error updating status");
+      }
+    } catch (error) {
+      console.error('Error updating visitor status:', error);
+      alert("Connection error: " + error.message);
+    }
+  };
+
   // Protect route - if not authenticated, redirect will happen in useEffect
   if (!isAuthenticated) {
     return null;
@@ -224,6 +255,7 @@ const SalesDashboard = () => {
                 <th>Mobile</th>
                 <th>Email</th>
                 <th>Nationality</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -270,6 +302,56 @@ const SalesDashboard = () => {
                     )}
                   </td>
                   <td>{visitor.nationality || 'N/A'}</td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <select
+                        value={visitor.status || 'Follow-up Required'}
+                        onChange={(e) => handleUpdateVisitorStatus(visitor.id, e.target.value)}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #e0e0e0',
+                          fontSize: '0.85rem',
+                          backgroundColor: '#fafbff',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="Follow-up Required">⏰ Follow-up Required</option>
+                        <option value="Negotiation">💬 Negotiation</option>
+                        <option value="Deal Closed">✓ Deal Closed</option>
+                        <option value="Not Interested">✕ Not Interested</option>
+                      </select>
+                      {visitor.statusChangedAt ? (
+                        <span style={{ fontSize: '0.7rem', color: '#999' }}>
+                          Updated: {(() => {
+                            try {
+                              let timestamp = visitor.statusChangedAt;
+                              
+                              // Handle Firestore timestamp object
+                              if (timestamp && typeof timestamp === 'object' && timestamp.seconds) {
+                                timestamp = timestamp.seconds * 1000;
+                              } else if (typeof timestamp === 'object' && timestamp._seconds) {
+                                timestamp = timestamp._seconds * 1000;
+                              }
+                              
+                              const date = new Date(timestamp);
+                              if (isNaN(date.getTime())) {
+                                return 'Invalid date';
+                              }
+                              
+                              return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })}, ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                            } catch (e) {
+                              return 'Date error';
+                            }
+                          })()}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.7rem', color: '#ddd' }}>
+                          Not updated
+                        </span>
+                      )}
+                    </div>
+                  </td>
                 </tr>
                 );
               })}
@@ -281,7 +363,7 @@ const SalesDashboard = () => {
       {/* Daily Activity Update Section */}
       {salesUser && (
         <DailyActivityUpdate 
-          salesUserId={salesUser.id} 
+          salesUserId={salesUser.userId} 
           salesUserName={salesUser.name}
         />
       )}

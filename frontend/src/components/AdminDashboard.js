@@ -14,6 +14,9 @@ const AdminDashboard = () => {
   const [visiblePasswords, setVisiblePasswords] = useState({});
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [submittedReasons, setSubmittedReasons] = useState([]);
+  const [dailyActivities, setDailyActivities] = useState([]);
+  const [selectedSalesUserId, setSelectedSalesUserId] = useState(null);
+  const [selectedSalesUserName, setSelectedSalesUserName] = useState(null);
 
   const [showSalesUserPopup, setShowSalesUserPopup] = useState(false);
   const [popupError, setPopupError] = useState("");
@@ -26,13 +29,15 @@ const AdminDashboard = () => {
   const [salesUserData, setSalesUserData] = useState({
     name: "",
     username: "",
-    password: ""
+    password: "",
+    designation: ""
   });
 
   const [editUserData, setEditUserData] = useState({
     name: "",
     username: "",
-    password: ""
+    password: "",
+    designation: ""
   });
 
   const togglePasswordVisibility = (userId) => {
@@ -290,6 +295,33 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchDailyActivities = async (salesUserId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/getDailyActivities/${salesUserId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setDailyActivities(data || []);
+    } catch (error) {
+      console.error('Error fetching daily activities:', error);
+      setDailyActivities([]);
+      alert('Error fetching daily activities: ' + error.message);
+    }
+  };
+
+  const handleViewDailyReport = (userId, userName) => {
+    setSelectedSalesUserId(userId);
+    setSelectedSalesUserName(userName);
+    fetchDailyActivities(userId);
+  };
+
+  const handleCloseDailyReport = () => {
+    setSelectedSalesUserId(null);
+    setSelectedSalesUserName(null);
+    setDailyActivities([]);
+  };
+
   const handleApprove = async (editId) => {
     await fetch("http://localhost:5000/approveEdit", {
       method: "POST",
@@ -339,7 +371,7 @@ const AdminDashboard = () => {
         setPopupError('User created successfully!');
         setTimeout(() => {
           setShowSalesUserPopup(false);
-          setSalesUserData({ name: '', username: '', password: '' });
+          setSalesUserData({ name: '', username: '', password: '', designation: '' });
           setPopupError('');
           fetchSalesUsers(); // Refresh the sales users list
         }, 1500);
@@ -357,7 +389,8 @@ const AdminDashboard = () => {
     setEditUserData({
       name: user.name,
       username: user.username,
-      password: user.password
+      password: user.password,
+      designation: user.designation || ''
     });
     setEditUserError('');
     setShowEditUserPopup(true);
@@ -390,7 +423,7 @@ const AdminDashboard = () => {
         setTimeout(() => {
           setShowEditUserPopup(false);
           setEditingUserId(null);
-          setEditUserData({ name: '', username: '', password: '' });
+          setEditUserData({ name: '', username: '', password: '', designation: '' });
           setEditUserError('');
           fetchSalesUsers(); // Refresh the sales users list
         }, 1500);
@@ -532,6 +565,14 @@ const AdminDashboard = () => {
                 onChange={handleSalesUserChange}
                 required
               />
+              <input
+                type="text"
+                name="designation"
+                placeholder="Designation (e.g., Senior Sales Executive)"
+                value={salesUserData.designation}
+                onChange={handleSalesUserChange}
+                required
+              />
               {popupError && (
                 <div className="dashboard-popup-error">
                   {popupError}
@@ -541,7 +582,7 @@ const AdminDashboard = () => {
                 <button
                   type="submit"
                   className="dashboard-download-btn"
-                  disabled={popupError === 'Creating...' || !salesUserData.name || !salesUserData.username || !salesUserData.password}
+                  disabled={popupError === 'Creating...' || !salesUserData.name || !salesUserData.username || !salesUserData.password || !salesUserData.designation}
                 >
                   {popupError === 'Creating...' ? 'Creating...' : 'Create User'}
                 </button>
@@ -588,6 +629,14 @@ const AdminDashboard = () => {
                 onChange={handleEditUserChange}
                 required
               />
+              <input
+                type="text"
+                name="designation"
+                placeholder="Designation (e.g., Senior Sales Executive)"
+                value={editUserData.designation}
+                onChange={handleEditUserChange}
+                required
+              />
               {editUserError && (
                 <div className="dashboard-popup-error">
                   {editUserError}
@@ -597,7 +646,7 @@ const AdminDashboard = () => {
                 <button
                   type="submit"
                   className="dashboard-download-btn"
-                  disabled={editUserError === 'Updating...' || !editUserData.name || !editUserData.username || !editUserData.password}
+                  disabled={editUserError === 'Updating...' || !editUserData.name || !editUserData.username || !editUserData.password || !editUserData.designation}
                 >
                   {editUserError === 'Updating...' ? 'Updating...' : 'Update User'}
                 </button>
@@ -638,7 +687,6 @@ const AdminDashboard = () => {
                 <th>Date</th>
                 <th>Time</th>
                 <th>Full Name</th>
-                <th>Father/Mother Name</th>
                 <th>Gender</th>
                 <th>Nationality</th>
                 <th>Permanent Address</th>
@@ -647,8 +695,7 @@ const AdminDashboard = () => {
                 <th>Email</th>
                 {/* Removed Govt ID fields */}
                 <th>Broker Name</th>
-                <th>Broker Company</th>
-                <th>Broker Contact</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -678,7 +725,6 @@ const AdminDashboard = () => {
                         : ""}
                     </td>
                     <td>{visitor.fullName}</td>
-                    <td>{visitor.fatherMotherName}</td>
                     <td>{visitor.gender}</td>
                     <td>{visitor.nationality}</td>
                     <td>{visitor.permanentAddress}</td>
@@ -687,8 +733,45 @@ const AdminDashboard = () => {
                     <td>{visitor.email}</td>
                     {/* Removed Govt ID fields */}
                     <td>{visitor.brokerName}</td>
-                    <td>{visitor.brokerCompany}</td>
-                    <td>{visitor.brokerContact}</td>
+                    <td>
+                      <div style={{ fontSize: '0.85rem' }}>
+                        <strong>{visitor.status || 'Follow-up Required'}</strong>
+                        {visitor.statusChangedBy ? (
+                          <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '2px' }}>
+                            <div>by {visitor.statusChangedBy}</div>
+                            {visitor.statusChangedAt && (
+                              <div style={{ fontSize: '0.7rem', color: '#bbb' }}>
+                                {(() => {
+                                  try {
+                                    let timestamp = visitor.statusChangedAt;
+                                    
+                                    // Handle Firestore timestamp object
+                                    if (timestamp && typeof timestamp === 'object' && timestamp.seconds) {
+                                      timestamp = timestamp.seconds * 1000;
+                                    } else if (typeof timestamp === 'object' && timestamp._seconds) {
+                                      timestamp = timestamp._seconds * 1000;
+                                    }
+                                    
+                                    const date = new Date(timestamp);
+                                    if (isNaN(date.getTime())) {
+                                      return 'Invalid date';
+                                    }
+                                    
+                                    return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}, ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                                  } catch (e) {
+                                    return 'Date error';
+                                  }
+                                })()}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '0.75rem', color: '#ccc', marginTop: '2px' }}>
+                            No update yet
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {edit && (
@@ -734,6 +817,7 @@ const AdminDashboard = () => {
               <tr>
                 <th>Name</th>
                 <th>Username</th>
+                <th>Designation</th>
                 <th>Password</th>
                 <th>Created Date</th>
                 <th>Actions</th>
@@ -745,6 +829,7 @@ const AdminDashboard = () => {
                   <tr key={user.id}>
                     <td><strong>{user.name}</strong></td>
                     <td>{user.username}</td>
+                    <td><em>{user.designation || 'N/A'}</em></td>
                     <td className="password-cell">
                       <span className="password-display">
                         {visiblePasswords[user.id] ? user.password : '••••••••••'}
@@ -801,6 +886,155 @@ const AdminDashboard = () => {
           </table>
         </div>
 
+      </div>
+
+      <div className="dashboard-section">
+
+        <div className="dashboard-section-header">
+          <h2>📊 Daily Activity Reports</h2>
+          <button 
+            className="dashboard-download-btn" 
+            onClick={() => handleCloseDailyReport()}
+            disabled={!selectedSalesUserId}
+            style={{ fontSize: '0.85rem', padding: '10px 16px' }}
+            title="Clear selection"
+          >
+            ✕ Clear
+          </button>
+        </div>
+
+        {!selectedSalesUserId ? (
+          <div>
+            <div style={{ marginBottom: '20px', padding: '14px 16px', background: 'linear-gradient(90deg, #f0f4ff 0%, #f5f9ff 100%)', borderRadius: '8px', borderLeft: '4px solid #667eea' }}>
+              <p style={{ margin: '0', color: '#667eea', fontWeight: '600', fontSize: '0.95rem' }}>
+                Select a sales team member to view their daily activity reports
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px' }}>
+              {salesUsers.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => handleViewDailyReport(user.id, user.name)}
+                  style={{
+                    padding: '18px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-3px)';
+                    e.target.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.35)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.2)';
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <div>👤 {user.name}</div>
+                      <div style={{ fontSize: '0.8rem', marginTop: '4px', opacity: 0.9 }}>
+                        {user.designation || 'Sales Representative'}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '1.2rem' }}>→</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ marginBottom: '24px', padding: '16px 18px', background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)', borderRadius: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ margin: '0 0 4px 0', color: 'white', fontSize: '1.1rem' }}>📋 Daily Reports</h3>
+                  <p style={{ margin: '0', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem' }}>{selectedSalesUserName}</p>
+                </div>
+                <button 
+                  onClick={() => handleCloseDailyReport()}
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    color: 'white',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    fontWeight: '600'
+                  }}
+                >
+                  ← Back
+                </button>
+              </div>
+            </div>
+
+            {dailyActivities.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '16px' }}>
+                {dailyActivities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    style={{
+                      border: '1px solid #e8e8f0',
+                      borderRadius: '12px',
+                      padding: '18px',
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fc 100%)',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                      transition: 'all 0.3s ease',
+                      borderTop: '3px solid #667eea'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '12px', borderBottom: '1px solid #e8e8f0' }}>
+                      <h4 style={{ margin: '0', color: '#667eea', fontSize: '1rem', fontWeight: '700' }}>
+                        📅 {new Date(activity.date).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                      </h4>
+                    </div>
+                    <div style={{ color: '#555', fontSize: '0.9rem', lineHeight: '1.9' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                        <p style={{ margin: '0', padding: '8px 12px', background: '#f0f4ff', borderRadius: '6px' }}><strong>📞 Calls:</strong> <span style={{ color: '#667eea', fontWeight: '600' }}>{activity.totalCalls || 0}</span></p>
+                        <p style={{ margin: '0', padding: '8px 12px', background: '#f0f4ff', borderRadius: '6px' }}><strong>🤝 Meetings:</strong> <span style={{ color: '#667eea', fontWeight: '600' }}>{activity.totalMeetings || 0}</span></p>
+                      </div>
+                      {activity.visitorStatus && (
+                        <p style={{ margin: '0 0 10px 0', padding: '8px 12px', background: '#fef3e6', borderRadius: '6px', borderLeft: '3px solid #f39c12' }}><strong>👤 Status:</strong> {activity.visitorStatus}</p>
+                      )}
+                      {activity.dealsClosed && (
+                        <p style={{ margin: '0 0 10px 0', padding: '8px 12px', background: '#e8f8f5', borderRadius: '6px', borderLeft: '3px solid #27ae60' }}><strong>✓ Deals:</strong> {activity.dealsClosed}</p>
+                      )}
+                      {activity.challengesFaced && (
+                        <p style={{ margin: '0 0 10px 0', padding: '8px 12px', background: '#fdeaea', borderRadius: '6px', borderLeft: '3px solid #e74c3c' }}><strong>⚠️ Challenges:</strong> {activity.challengesFaced}</p>
+                      )}
+                      {activity.nextDayPlan && (
+                        <p style={{ margin: '0 0 10px 0', padding: '8px 12px', background: '#f0f4ff', borderRadius: '6px', borderLeft: '3px solid #667eea' }}><strong>📋 Next Steps:</strong> {activity.nextDayPlan}</p>
+                      )}
+                      {activity.additionalRemarks && (
+                        <p style={{ margin: '0', padding: '8px 12px', background: '#f9f9f9', borderRadius: '6px', borderLeft: '3px solid #95a5a6' }}><strong>💬 Remarks:</strong> {activity.additionalRemarks}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#f8f9fc', borderRadius: '12px', border: '1px dashed #e0e0e0' }}>
+                <p style={{ margin: '0', color: '#999', fontSize: '1rem' }}>📭 No daily activity reports submitted yet</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="dashboard-section">

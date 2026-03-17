@@ -54,6 +54,10 @@ app.use(cors({
   credentials: true
 }));
 
+// Parse JSON request bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Error handling for JSON parsing
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
@@ -149,7 +153,7 @@ app.post('/submitVisitor', async (req, res) => {
   // Remove Govt ID fields if present
   delete visitorData.governmentIdType;
   delete visitorData.governmentIdNumber;
-  visitorData.status = 'Pending';
+  visitorData.status = 'Follow-up Required'; // Default status for new visitors
   visitorData.submissionDate = admin.firestore.FieldValue.serverTimestamp();
   try {
     const docRef = await db.collection('visitors').add(visitorData);
@@ -200,6 +204,35 @@ app.post('/deleteVisitor', async (req, res) => {
   }
 });
 
+// Update visitor status
+app.post('/updateVisitorStatus', async (req, res) => {
+  const { visitorId, status, changedBy } = req.body;
+  try {
+    if (!visitorId || !status) {
+      return res.status(400).json({ error: 'Visitor ID and status are required' });
+    }
+    
+    await db.collection('visitors').doc(visitorId).update({ 
+      status,
+      statusChangedBy: changedBy || 'Admin',
+      statusChangedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // Log the activity
+    await db.collection('activityLogs').add({
+      user: changedBy || 'Admin',
+      action: `updated visitor status to ${status}`,
+      visitorId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating visitor status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Edit visitor (for sales)
 app.post('/editVisitor', async (req, res) => {
   const { visitorId, changes, userId } = req.body;
@@ -229,11 +262,11 @@ app.post('/editVisitor', async (req, res) => {
 
 // Create sales user (accessible from admin dashboard)
 app.post('/createSalesUser', async (req, res) => {
-  const { name, username, password } = req.body;
+  const { name, username, password, designation } = req.body;
   try {
     // Validate input
-    if (!name || !username || !password) {
-      return res.status(400).json({ error: 'Missing required fields: name, username, password' });
+    if (!name || !username || !password || !designation) {
+      return res.status(400).json({ error: 'Missing required fields: name, username, password, designation' });
     }
     
     // Check if username already exists
@@ -247,13 +280,14 @@ app.post('/createSalesUser', async (req, res) => {
       name, 
       username, 
       password,
+      designation,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
     
     // Log the activity
     await db.collection('activityLogs').add({
       user: 'admin',
-      action: `created sales user: ${username}`,
+      action: `created sales user: ${username} (${designation})`,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     
@@ -312,7 +346,7 @@ app.post('/deleteSalesUser', async (req, res) => {
 
 // Update a sales user
 app.post('/updateSalesUser', async (req, res) => {
-  const { userId, name, username, password } = req.body;
+  const { userId, name, username, password, designation } = req.body;
   try {
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
@@ -330,6 +364,7 @@ app.post('/updateSalesUser', async (req, res) => {
     if (name) updateData.name = name;
     if (username) updateData.username = username;
     if (password) updateData.password = password;
+    if (designation) updateData.designation = designation;
     
     await db.collection('salesUsers').doc(userId).update(updateData);
     
@@ -532,25 +567,28 @@ app.post('/deleteReasons', async (req, res) => {
 
 // Submit daily activity report
 app.post('/submitDailyActivity', async (req, res) => {
-  const {
-    salesUserId,
-    salesUserName,
-    date,
-    locationsVisited,
-    clientInteractions,
-    meetingsConducted,
-    callsMade,
-    callDiscussions,
-    siteVisits,
-    leadsGenerated,
-    leadsFollowup,
-    dealsClosed,
-    challengesFaced,
-    nextDayPlan,
-    remarks
-  } = req.body;
-
   try {
+    const {
+      salesUserId,
+      salesUserName,
+      date,
+      totalMeetings,
+      totalCalls,
+      dealsClosed,
+      challengesFaced,
+      nextDayPlan,
+      additionalRemarks
+    } = req.body;
+
+    // Validation
+    if (!salesUserId || !salesUserName || !date) {
+      return res.status(400).json({ error: 'Missing required fields: salesUserId, salesUserName, date' });
+    }
+
+    if (!challengesFaced || !nextDayPlan) {
+      return res.status(400).json({ error: 'Challenges and Next Day Plan are required' });
+    }
+
     // Check if activity already exists for this date
     const existingActivity = await db.collection('dailyActivities')
       .where('salesUserId', '==', salesUserId)
@@ -566,18 +604,12 @@ app.post('/submitDailyActivity', async (req, res) => {
       salesUserId,
       salesUserName,
       date,
-      locationsVisited,
-      clientInteractions: clientInteractions || [],
-      meetingsConducted: meetingsConducted || [],
-      callsMade,
-      callDiscussions,
-      siteVisits,
-      leadsGenerated,
-      leadsFollowup,
-      dealsClosed,
-      challengesFaced,
-      nextDayPlan,
-      remarks,
+      totalMeetings: parseInt(totalMeetings) || 0,
+      totalCalls: parseInt(totalCalls) || 0,
+      dealsClosed: dealsClosed || '',
+      challengesFaced: challengesFaced || '',
+      nextDayPlan: nextDayPlan || '',
+      additionalRemarks: additionalRemarks || '',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -593,22 +625,34 @@ app.post('/submitDailyActivity', async (req, res) => {
     res.json({ success: true, id: docRef.id });
   } catch (error) {
     console.error('Error submitting daily activity:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
 
 // Update daily activity report
 app.post('/updateDailyActivity', async (req, res) => {
-  const { id, ...updateData } = req.body;
-
   try {
-    updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+    const { id, salesUserName, totalMeetings, totalCalls, dealsClosed, challengesFaced, nextDayPlan, additionalRemarks, date } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: 'Activity ID is required' });
+    }
+
+    const updateData = {
+      totalMeetings: parseInt(totalMeetings) || 0,
+      totalCalls: parseInt(totalCalls) || 0,
+      dealsClosed: dealsClosed || '',
+      challengesFaced: challengesFaced || '',
+      nextDayPlan: nextDayPlan || '',
+      additionalRemarks: additionalRemarks || '',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
 
     await db.collection('dailyActivities').doc(id).update(updateData);
 
     // Log the activity
     await db.collection('activityLogs').add({
-      user: updateData.salesUserName,
+      user: salesUserName,
       action: `updated daily activity report`,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -616,7 +660,7 @@ app.post('/updateDailyActivity', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error updating daily activity:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
 
@@ -626,14 +670,16 @@ app.get('/getDailyActivities/:salesUserId', async (req, res) => {
 
   try {
     const activities = await db.collection('dailyActivities')
-      .where('salesUserId', '==', salesUserId)
-      .orderBy('date', 'desc')
+      .where('salesUserId', '==', String(salesUserId))
       .get();
 
     const activitiesList = activities.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
+
+    // Sort by date descending on the backend
+    activitiesList.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     res.json(activitiesList);
   } catch (error) {
@@ -644,9 +690,9 @@ app.get('/getDailyActivities/:salesUserId', async (req, res) => {
 
 // Delete a daily activity
 app.post('/deleteDailyActivity', async (req, res) => {
-  const { id } = req.body;
-
   try {
+    const { id } = req.body;
+
     if (!id) {
       return res.status(400).json({ error: 'Activity ID is required' });
     }
@@ -663,7 +709,7 @@ app.post('/deleteDailyActivity', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting daily activity:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
 
