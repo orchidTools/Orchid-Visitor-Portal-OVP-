@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
+import API_BASE_URL from '../config';
 
 const SalesDashboard = () => {
     const navigate = useNavigate();
@@ -34,7 +35,7 @@ const SalesDashboard = () => {
       }
       // Send reason to backend
       try {
-        const response = await fetch('http://localhost:5000/viewReason', {
+        const response = await fetch(\\/viewReason', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -76,7 +77,7 @@ const SalesDashboard = () => {
       try {
         // Log the logout event to backend
         if (salesUser) {
-          await fetch('http://localhost:5000/logLogout', {
+          await fetch(\\/logLogout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -120,7 +121,7 @@ const SalesDashboard = () => {
   }, [navigate]);
 
   const fetchVisitors = async () => {
-    const response = await fetch('http://localhost:5000/getVisitors');
+    const response = await fetch(\\/getVisitors');
     const data = await response.json();
     setVisitors(data);
   };

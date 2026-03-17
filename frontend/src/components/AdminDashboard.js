@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import * as XLSX from "xlsx";
+import API_BASE_URL from "../config";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/deleteLogs', {
+      const response = await fetch(\\/deleteLogs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ logIds: Array.from(selectedLogs) })
@@ -100,7 +101,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/clearAllLogs', {
+      const response = await fetch(\\/clearAllLogs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -152,7 +153,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/deleteReasons', {
+      const response = await fetch(\\/deleteReasons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reasonIds: Array.from(selectedReasons) })
@@ -180,7 +181,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/deleteReasons', {
+      const response = await fetch(\\/deleteReasons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reasonIds: [reasonId] })
@@ -208,7 +209,7 @@ const AdminDashboard = () => {
   const handleLogout = async () => {
     try {
       // Log the logout event
-      await fetch('http://localhost:5000/logLogout', {
+      await fetch(\\/logLogout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

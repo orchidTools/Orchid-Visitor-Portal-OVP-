@@ -45,8 +45,14 @@ if (!db) {
   process.exit(1);
 }
 
-app.use(cors());
-app.use(express.json()); // Use express JSON parser only
+app.use(cors({
+  origin: [
+    'http://172.16.100.229:3000',      // Local frontend
+    'http://localhost:3000',             // Local development
+    'https://peaceful-cannoli-07d2ed.netlify.app' // Netlify production
+  ],
+  credentials: true
+}));
 
 // Error handling for JSON parsing
 app.use((err, req, res, next) => {

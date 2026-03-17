@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './Form.css';
+import API_BASE_URL from '../config';
 
 const EditVisitor = () => {
   const { id } = useParams();
@@ -9,7 +10,7 @@ const EditVisitor = () => {
 
   useEffect(() => {
     const fetchVisitor = async () => {
-      const response = await fetch('http://localhost:5000/getVisitors');
+      const response = await fetch(`${API_BASE_URL}/getVisitors`);
       const visitors = await response.json();
       const visitor = visitors.find(v => v.id === id);
       if (visitor) {
@@ -31,7 +32,7 @@ const EditVisitor = () => {
     delete changes.submissionDate;
     delete changes.status;
     try {
-      const response = await fetch('http://localhost:5000/editVisitor', {
+      const response = await fetch(`${API_BASE_URL}/editVisitor`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ visitorId: id, changes, userId })
