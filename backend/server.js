@@ -528,6 +528,147 @@ app.post('/deleteReasons', async (req, res) => {
   }
 });
 
+// ==================== DAILY ACTIVITY ENDPOINTS ====================
+
+// Submit daily activity report
+app.post('/submitDailyActivity', async (req, res) => {
+  const {
+    salesUserId,
+    salesUserName,
+    date,
+    locationsVisited,
+    clientInteractions,
+    meetingsConducted,
+    callsMade,
+    callDiscussions,
+    siteVisits,
+    leadsGenerated,
+    leadsFollowup,
+    dealsClosed,
+    challengesFaced,
+    nextDayPlan,
+    remarks
+  } = req.body;
+
+  try {
+    // Check if activity already exists for this date
+    const existingActivity = await db.collection('dailyActivities')
+      .where('salesUserId', '==', salesUserId)
+      .where('date', '==', date)
+      .get();
+
+    if (!existingActivity.empty) {
+      return res.status(400).json({ error: 'Activity report already exists for this date. Please edit the existing one.' });
+    }
+
+    // Create new activity report
+    const docRef = await db.collection('dailyActivities').add({
+      salesUserId,
+      salesUserName,
+      date,
+      locationsVisited,
+      clientInteractions: clientInteractions || [],
+      meetingsConducted: meetingsConducted || [],
+      callsMade,
+      callDiscussions,
+      siteVisits,
+      leadsGenerated,
+      leadsFollowup,
+      dealsClosed,
+      challengesFaced,
+      nextDayPlan,
+      remarks,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Log the activity
+    await db.collection('activityLogs').add({
+      user: salesUserName,
+      username: salesUserId,
+      action: `submitted daily activity report`,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.json({ success: true, id: docRef.id });
+  } catch (error) {
+    console.error('Error submitting daily activity:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update daily activity report
+app.post('/updateDailyActivity', async (req, res) => {
+  const { id, ...updateData } = req.body;
+
+  try {
+    updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+    await db.collection('dailyActivities').doc(id).update(updateData);
+
+    // Log the activity
+    await db.collection('activityLogs').add({
+      user: updateData.salesUserName,
+      action: `updated daily activity report`,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating daily activity:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all daily activities for a sales user
+app.get('/getDailyActivities/:salesUserId', async (req, res) => {
+  const { salesUserId } = req.params;
+
+  try {
+    const activities = await db.collection('dailyActivities')
+      .where('salesUserId', '==', salesUserId)
+      .orderBy('date', 'desc')
+      .get();
+
+    const activitiesList = activities.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json(activitiesList);
+  } catch (error) {
+    console.error('Error fetching daily activities:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete a daily activity
+app.post('/deleteDailyActivity', async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    if (!id) {
+      return res.status(400).json({ error: 'Activity ID is required' });
+    }
+
+    await db.collection('dailyActivities').doc(id).delete();
+
+    // Log the activity
+    await db.collection('activityLogs').add({
+      user: 'system',
+      action: `deleted daily activity report`,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting daily activity:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== END DAILY ACTIVITY ENDPOINTS ====================
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('Available routes:');

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import API_BASE_URL from '../config';
+import DailyActivityUpdate from './DailyActivityUpdate';
 
 const SalesDashboard = () => {
     const navigate = useNavigate();
@@ -276,6 +277,14 @@ const SalesDashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Daily Activity Update Section */}
+      {salesUser && (
+        <DailyActivityUpdate 
+          salesUserId={salesUser.id} 
+          salesUserName={salesUser.name}
+        />
+      )}
     </div>
   );
 };
