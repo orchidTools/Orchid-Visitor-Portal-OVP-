@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './DailyActivityUpdate.css';
 import API_BASE_URL from '../config';
 
@@ -24,7 +24,7 @@ const DailyActivityUpdate = ({ salesUserId, salesUserName }) => {
   const [loading, setLoading] = useState(false);
 
   // Fetch daily activity history
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/getDailyActivities/${salesUserId}`);
       if (!response.ok) {
@@ -38,7 +38,7 @@ const DailyActivityUpdate = ({ salesUserId, salesUserName }) => {
       console.error('Error fetching history:', error);
       setHistory([]);
     }
-  };
+  }, [salesUserId]);
 
   // Fetch history on mount
   useEffect(() => {
