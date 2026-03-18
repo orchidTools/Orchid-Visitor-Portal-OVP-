@@ -249,26 +249,26 @@ const AdminDashboard = () => {
   }, [navigate]);
 
   const fetchVisitors = async () => {
-    const response = await fetch("http://localhost:5000/getVisitors");
+    const response = await fetch(`${API_BASE_URL}/getVisitors`);
     const data = await response.json();
     setVisitors(data);
   };
 
   const fetchLogs = async () => {
-    const response = await fetch("http://localhost:5000/getActivityLogs");
+    const response = await fetch(`${API_BASE_URL}/getActivityLogs`);
     const data = await response.json();
     setLogs(data);
   };
 
   const fetchPendingEdits = async () => {
-    const response = await fetch("http://localhost:5000/getPendingEdits");
+    const response = await fetch(`${API_BASE_URL}/getPendingEdits`);
     const data = await response.json();
     setPendingEdits(data);
   };
 
   const fetchSalesUsers = async () => {
     try {
-      const response = await fetch("http://localhost:5000/getSalesUsers");
+      const response = await fetch(`${API_BASE_URL}/getSalesUsers`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -283,7 +283,7 @@ const AdminDashboard = () => {
 
   const fetchReasons = async () => {
     try {
-      const response = await fetch("http://localhost:5000/getReasons");
+      const response = await fetch(`${API_BASE_URL}/getReasons`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
