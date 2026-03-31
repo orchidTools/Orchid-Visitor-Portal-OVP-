@@ -1,0 +1,355 @@
+/* ==================== VISITOR FORM PAGE STYLES ==================== */
+
+.visitor-page {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: #ffffff;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* LEFT SIDE - BRAND SECTION */
+.visitor-brand {
+  flex: 1;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 30px;
+  border-right: 2px solid #e0e0e0;
+  gap: 30px;
+}
+
+.visitor-brand .logo-section {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.visitor-brand .logo-image {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 0;
+  display: block;
+}
+
+.visitor-brand .portal-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.visitor-brand .portal-orchid {
+  color: #1a3a5c;
+  font-size: 3.2rem;
+}
+
+.visitor-brand .portal-visitor {
+  color: #f4b14d;
+  font-size: 3.2rem;
+}
+
+.visitor-brand .portal-portal {
+  color: #1a3a5c;
+  font-size: 3.2rem;
+  flex-basis: 100%;
+}
+
+/* RIGHT SIDE - FORM SECTION */
+.visitor-form-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 50px;
+  background: #ffffff;
+  gap: 25px;
+  overflow-y: auto;
+}
+
+.visitor-form-title {
+  font-size: 2rem;
+  color: #1a3a5c;
+  margin: 0;
+  text-align: left;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-bottom: 3px solid #1a3a5c;
+  padding-bottom: 8px;
+  width: fit-content;
+}
+
+.visitor-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+.form-row.full-width {
+  grid-template-columns: 1fr;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 12px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #ffffff;
+  color: #1a1a2e;
+  transition: all 0.3s ease;
+}
+
+.form-group input::placeholder,
+.form-group select::placeholder,
+.form-group textarea::placeholder {
+  color: #b0b0b0;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #1a3a5c;
+  box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.visitor-form-submit {
+  padding: 14px 40px;
+  background: #1a3a5c !important;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.visitor-form-submit:hover {
+  background: #0f2540 !important;
+  box-shadow: 0 6px 15px rgba(26, 58, 92, 0.4);
+}
+
+.visitor-form-submit:active {
+  transform: translateY(2px);
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+  .visitor-page {
+    flex-direction: column;
+  }
+
+  .visitor-brand {
+    flex: 0 1 auto;
+    border-right: none;
+    border-bottom: 2px solid #e0e0e0;
+    padding: 30px 25px;
+    gap: 25px;
+  }
+
+  .visitor-brand .logo-image {
+    max-width: 150px;
+  }
+
+  .visitor-brand .portal-name {
+    font-size: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .visitor-brand .portal-orchid,
+  .visitor-brand .portal-visitor,
+  .visitor-brand .portal-portal {
+    font-size: 2.6rem;
+  }
+
+  .visitor-brand .portal-portal {
+    flex-basis: 100%;
+  }
+
+  .visitor-form-section {
+    flex: 0 1 auto;
+    padding: 40px 40px;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .visitor-form-title {
+    font-size: 1.7rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .visitor-page {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .visitor-brand {
+    flex: auto;
+    border-right: none;
+    border-bottom: 2px solid #e0e0e0;
+    padding: 25px 20px;
+    gap: 20px;
+    min-height: 280px;
+    justify-content: center;
+  }
+
+  .visitor-brand .logo-image {
+    max-width: 120px;
+  }
+
+  .visitor-brand .portal-name {
+    font-size: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .visitor-brand .portal-orchid,
+  .visitor-brand .portal-visitor,
+  .visitor-brand .portal-portal {
+    font-size: 2.1rem;
+  }
+
+  .visitor-brand .portal-visitor {
+    margin-left: 0;
+  }
+
+  .visitor-brand .portal-portal {
+    flex-basis: 100%;
+  }
+
+  .visitor-form-section {
+    flex: auto;
+    padding: 30px 20px;
+    gap: 18px;
+    justify-content: center;
+  }
+
+  .visitor-form-title {
+    font-size: 1.4rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .visitor-form-submit {
+    padding: 12px 32px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .visitor-page {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .visitor-brand {
+    flex: auto;
+    padding: 20px 15px;
+    gap: 15px;
+    min-height: 220px;
+    justify-content: center;
+  }
+
+  .visitor-brand .logo-image {
+    max-width: 100px;
+  }
+
+  .visitor-brand .portal-name {
+    font-size: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .visitor-brand .portal-orchid,
+  .visitor-brand .portal-visitor,
+  .visitor-brand .portal-portal {
+    font-size: 1.6rem;
+  }
+
+  .visitor-brand .portal-visitor {
+    margin-left: 0;
+  }
+
+  .visitor-brand .portal-portal {
+    flex-basis: 100%;
+  }
+
+  .visitor-form-section {
+    flex: auto;
+    padding: 25px 15px;
+    gap: 15px;
+    justify-content: center;
+  }
+
+  .visitor-form-title {
+    font-size: 1.1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 9px 10px;
+    font-size: 0.85rem;
+  }
+
+  .visitor-form-submit {
+    padding: 10px 28px;
+    font-size: 0.9rem;
+  }
+}

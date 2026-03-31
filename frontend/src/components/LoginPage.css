@@ -1,0 +1,384 @@
+/* ==================== LOGIN PAGE STYLES ==================== */
+
+.login-page {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: #ffffff;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* LEFT SIDE - BRAND SECTION */
+.login-brand {
+  flex: 1;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 30px;
+  border-right: 2px solid #e0e0e0;
+  gap: 30px;
+}
+
+.logo-section {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.logo-image {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 0;
+  display: block;
+}
+
+.portal-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.portal-orchid {
+  color: #1a3a5c;
+  font-size: 3.2rem;
+}
+
+.portal-visitor {
+  color: #f4b14d;
+  font-size: 3.2rem;
+  margin-left: 0;
+}
+
+.portal-portal {
+  color: #1a3a5c;
+  font-size: 3.2rem;
+  flex-basis: 100%;
+}
+
+/* RIGHT SIDE - LOGIN FORM SECTION */
+.login-form-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 50px;
+  background: #ffffff;
+  gap: 10px;
+}
+
+.login-title {
+  font-size: 2.2rem;
+  color: #1a3a5c;
+  margin-bottom: 0;
+  text-align: left;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-decoration: underline;
+  text-decoration-color: #1a3a5c;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 10px;
+  width: 100%;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 65px;
+}
+
+.login-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+
+}
+
+.login-form label {
+  font-size: 1.2rem;
+  color: #1a3a5c;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.login-form input {
+    padding: 16px 14px;
+    border: none;
+    border-bottom: 3px solid #1a3a5c;
+    font-size: 1.05rem;
+    width: 100% !important;
+    background: transparent;
+    border-radius: 0;
+    color: #1a1a2e;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.login-form input::placeholder {
+  color: #c0c0c0;
+  font-size: 1rem;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-bottom-color: #f4b14d;
+  box-shadow: 0 4px 0px #f4b14d;
+}
+
+.login-button {
+  padding: 16px 40px;
+  background: #1a3a5c;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.login-button:hover {
+  background: #0f2540;
+  box-shadow: 0 8px 20px rgba(26, 58, 92, 0.5);
+}
+
+.login-button:active {
+  transform: translateY(2px);
+}
+
+.login-subheading {
+  margin-top: 8px;
+  margin-bottom: 25px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .login-brand {
+    flex: 0 1 auto;
+    border-right: none;
+    border-bottom: 2px solid #e0e0e0;
+    padding: 30px 25px;
+    gap: 25px;
+  }
+
+  .logo-image {
+    max-width: 150px;
+  }
+
+  .portal-name {
+    font-size: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .portal-orchid,
+  .portal-visitor,
+  .portal-portal {
+    font-size: 2.6rem;
+  }
+
+  .portal-portal {
+    flex-basis: 100%;
+  }
+
+  .login-form-section {
+    flex: 0 1 auto;
+    padding: 30px 40px;
+    gap: 30px;
+    align-items: flex-start;
+  }
+
+  .login-title {
+    font-size: 1.9rem;
+    margin-bottom: 0;
+    text-align: left;
+  }
+
+  .login-form {
+    max-width: 100%;
+    gap: 28px;
+  }
+
+  .login-form label {
+    font-size: 1.1rem;
+  }
+
+  .login-form input {
+    padding: 14px 12px;
+    font-size: 1rem;
+    border-bottom: 2.5px solid #1a3a5c;
+  }
+
+  .login-button {
+    padding: 14px 35px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .login-brand {
+    flex: auto;
+    border-right: none;
+    border-bottom: 2px solid #e0e0e0;
+    padding: 25px 20px;
+    gap: 20px;
+    min-height: 280px;
+    justify-content: center;
+  }
+
+  .logo-image {
+    max-width: 120px;
+  }
+
+  .portal-name {
+    font-size: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .portal-orchid,
+  .portal-visitor,
+  .portal-portal {
+    font-size: 2.1rem;
+  }
+
+  .portal-visitor {
+    margin-left: 0;
+  }
+
+  .portal-portal {
+    flex-basis: 100%;
+  }
+
+  .login-form-section {
+    flex: auto;
+    padding: 30px 20px;
+    gap: 25px;
+    min-height: 320px;
+    align-items: flex-start;
+  }
+
+  .login-title {
+    font-size: 1.6rem;
+    margin-bottom: 0;
+    text-align: left;
+  }
+
+  .login-form {
+    max-width: 100%;
+    gap: 24px;
+  }
+
+  .login-form label {
+    font-size: 1rem;
+  }
+
+  .login-form input {
+    padding: 12px 10px;
+    font-size: 0.95rem;
+    border-bottom: 2px solid #1a3a5c;
+  }
+
+  .login-button {
+    padding: 13px 32px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .login-brand {
+    flex: auto;
+    padding: 20px 15px;
+    gap: 15px;
+    min-height: 220px;
+    justify-content: center;
+  }
+
+  .logo-image {
+    max-width: 100px;
+  }
+
+  .portal-name {
+    font-size: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .portal-orchid,
+  .portal-visitor,
+  .portal-portal {
+    font-size: 1.6rem;
+  }
+
+  .portal-visitor {
+    margin-left: 0;
+  }
+
+  .portal-portal {
+    flex-basis: 100%;
+  }
+
+  .login-form-section {
+    flex: auto;
+    padding: 20px 15px;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .login-title {
+    font-size: 1.3rem;
+    margin-bottom: 0;
+    text-align: left;
+  }
+
+  .login-form {
+    gap: 18px;
+  }
+
+  .login-form label {
+    font-size: 0.95rem;
+  }
+
+  .login-form input {
+    padding: 11px 9px;
+    font-size: 0.9rem;
+    border-bottom: 2px solid #1a3a5c;
+  }
+
+  .login-button {
+    padding: 12px 28px;
+    font-size: 0.95rem;
+  }
+}

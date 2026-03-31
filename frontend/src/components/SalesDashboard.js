@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import API_BASE_URL from '../config';
 import DailyActivityUpdate from './DailyActivityUpdate';
+import logo from '../images/logo.png';
 
 const SalesDashboard = () => {
     const navigate = useNavigate();
@@ -166,9 +167,12 @@ const SalesDashboard = () => {
   return (
     <div className="dashboard dashboard-white">
       <div className="dashboard-header">
-        <div>
-          <h1>Sales Dashboard</h1>
-          {salesUser && <p className="user-info">Welcome, <strong>{salesUser.name}</strong> (@{salesUser.username})</p>}
+        <div className="header-left">
+          <img src={logo} alt="Orchid Logo" className="logo-img" />
+          <div className="dashboard-header-content">
+            <h1>Sales Dashboard</h1>
+            {salesUser && <p className="user-info">Welcome back, <strong>{salesUser.name}</strong></p>}
+          </div>
         </div>
         <button className="dashboard-logout-btn" onClick={handleLogout}>
           Logout

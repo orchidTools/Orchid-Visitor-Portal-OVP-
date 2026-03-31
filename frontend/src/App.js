@@ -13,9 +13,6 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <header className="luxury-header">
-          <h1>Orchid Visitor Portal (OVP)</h1>
-        </header>
         <Routes>
           <Route path="/visitor-form" element={<VisitorForm />} />
           <Route path="/admin-login" element={<AdminLogin />} />

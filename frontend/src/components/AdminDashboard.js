@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import * as XLSX from "xlsx";
 import API_BASE_URL from "../config";
+import logo from "../images/logo.png";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -489,25 +490,66 @@ const AdminDashboard = () => {
   };
 
   const downloadExcel = () => {
+    // Prepare data with proper formatting
+    const excelData = [...visitors].reverse().map((visitor) => {
+      const submissionDate = visitor.submissionDate
+        ? new Date(visitor.submissionDate.seconds * 1000)
+        : new Date();
+      
+      return {
+        "Date": submissionDate.toLocaleDateString('en-IN'),
+        "Time": submissionDate.toLocaleTimeString('en-IN'),
+        "Full Name": visitor.fullName || "",
+        "Gender": visitor.gender || "",
+        "Nationality": visitor.nationality || "",
+        "Address": visitor.permanentAddress || visitor.currentAddress || "",
+        "Mobile Number": visitor.mobileNumber || "",
+        "Email": visitor.email || "",
+        "Broker Name": visitor.brokerName || "",
+        "Status": visitor.status || "Pending"
+      };
+    });
 
-    const worksheet = XLSX.utils.json_to_sheet(
-      visitors.map((visitor) => ({
-        Date: visitor.submissionDate
-          ? new Date(visitor.submissionDate.seconds * 1000).toLocaleDateString()
-          : "",
-        Time: visitor.submissionDate
-          ? new Date(visitor.submissionDate.seconds * 1000).toLocaleTimeString()
-          : "",
-        Name: visitor.fullName,
-        Mobile: visitor.mobileNumber,
-        Email: visitor.email
-      }))
-    );
+    // Create worksheet with proper column widths
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths
+    const columnWidths = [
+      { wch: 12 },  // Date
+      { wch: 12 },  // Time
+      { wch: 20 },  // Full Name
+      { wch: 12 },  // Gender
+      { wch: 15 },  // Nationality
+      { wch: 35 },  // Address
+      { wch: 15 },  // Mobile Number
+      { wch: 25 },  // Email
+      { wch: 20 },  // Broker Name
+      { wch: 12 }   // Status
+    ];
+    worksheet["!cols"] = columnWidths;
+
+    // Add header styling with background color
+    const headerStyle = {
+      fill: { fgColor: { rgb: "FF1a3a5c" } }, // Dark blue background
+      font: { bold: true, color: { rgb: "FFFFFFFF" } }, // White text
+      alignment: { horizontal: "center", vertical: "center" }
+    };
+
+    // Apply header styling
+    const headers = Object.keys(excelData[0] || {});
+    headers.forEach((header, index) => {
+      const cellRef = XLSX.utils.encode_col(index) + "1";
+      worksheet[cellRef].fill = headerStyle.fill;
+      worksheet[cellRef].font = headerStyle.font;
+      worksheet[cellRef].alignment = headerStyle.alignment;
+    });
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Visitors");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Visitor Data");
 
-    XLSX.writeFile(workbook, "visitors.xlsx");
+    // Generate filename with timestamp
+    const timestamp = new Date().toLocaleDateString('en-IN').replace(/\//g, '-');
+    XLSX.writeFile(workbook, `Visitor_Portal_Data_${timestamp}.xlsx`);
   };
 
   // Protect route - if not authenticated, redirect will happen in useEffect
@@ -519,7 +561,13 @@ const AdminDashboard = () => {
     <div className="dashboard dashboard-white">
 
       <div className="dashboard-header">
-        <h1>Admin Dashboard</h1>
+        <div className="header-left">
+          <img src={logo} alt="Orchid Logo" className="logo-img" />
+          <div className="dashboard-header-content">
+            <h1>Admin Dashboard</h1>
+            <p className="user-info">Welcome back, <strong>Administrator</strong></p>
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button
             className="dashboard-download-btn"
@@ -689,8 +737,7 @@ const AdminDashboard = () => {
                 <th>Full Name</th>
                 <th>Gender</th>
                 <th>Nationality</th>
-                <th>Permanent Address</th>
-                <th>Current Address</th>
+                <th>Address</th>
                 <th>Mobile</th>
                 <th>Email</th>
                 {/* Removed Govt ID fields */}
@@ -702,7 +749,7 @@ const AdminDashboard = () => {
 
             <tbody>
 
-              {visitors.map((visitor) => {
+              {[...visitors].reverse().map((visitor) => {
 
                 const edit = pendingEdits.find(
                   (e) => e.visitorId === visitor.id
@@ -727,8 +774,7 @@ const AdminDashboard = () => {
                     <td>{visitor.fullName}</td>
                     <td>{visitor.gender}</td>
                     <td>{visitor.nationality}</td>
-                    <td>{visitor.permanentAddress}</td>
-                    <td>{visitor.currentAddress}</td>
+                    <td>{visitor.permanentAddress || visitor.currentAddress || ""}</td>
                     <td>{visitor.mobileNumber}</td>
                     <td>{visitor.email}</td>
                     {/* Removed Govt ID fields */}
@@ -859,7 +905,7 @@ const AdminDashboard = () => {
                       <button 
                         className="dashboard-download-btn"
                         onClick={() => handleEditClick(user)}
-                        style={{ fontSize: '0.75rem', padding: '6px 12px', background: '#667eea' }}
+                        style={{ fontSize: '0.75rem', padding: '6px 12px', background: '#1a3a5c' }}
                         title="Edit user"
                       >
                         ✏️ Edit
@@ -905,8 +951,8 @@ const AdminDashboard = () => {
 
         {!selectedSalesUserId ? (
           <div>
-            <div style={{ marginBottom: '20px', padding: '14px 16px', background: 'linear-gradient(90deg, #f0f4ff 0%, #f5f9ff 100%)', borderRadius: '8px', borderLeft: '4px solid #667eea' }}>
-              <p style={{ margin: '0', color: '#667eea', fontWeight: '600', fontSize: '0.95rem' }}>
+            <div style={{ marginBottom: '20px', padding: '14px 16px', background: 'linear-gradient(90deg, #e8eff7 0%, #f0f5fa 100%)', borderRadius: '8px', borderLeft: '4px solid #1a3a5c' }}>
+              <p style={{ margin: '0', color: '#1a3a5c', fontWeight: '600', fontSize: '0.95rem' }}>
                 Select a sales team member to view their daily activity reports
               </p>
             </div>
@@ -917,7 +963,7 @@ const AdminDashboard = () => {
                   onClick={() => handleViewDailyReport(user.id, user.name)}
                   style={{
                     padding: '18px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: '#1a3a5c',
                     color: 'white',
                     border: 'none',
                     borderRadius: '10px',
@@ -925,21 +971,23 @@ const AdminDashboard = () => {
                     fontSize: '1rem',
                     fontWeight: '600',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)',
+                    boxShadow: '0 4px 12px rgba(26, 58, 92, 0.3)',
                     textAlign: 'left'
                   }}
                   onMouseEnter={(e) => {
                     e.target.style.transform = 'translateY(-3px)';
-                    e.target.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.35)';
+                    e.target.style.boxShadow = '0 8px 24px rgba(26, 58, 92, 0.4)';
+                    e.target.style.background = '#0f2540';
                   }}
                   onMouseLeave={(e) => {
                     e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.2)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(26, 58, 92, 0.3)';
+                    e.target.style.background = '#1a3a5c';
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                      <div>👤 {user.name}</div>
+                      <div>{user.name}</div>
                       <div style={{ fontSize: '0.8rem', marginTop: '4px', opacity: 0.9 }}>
                         {user.designation || 'Sales Representative'}
                       </div>
@@ -1176,8 +1224,8 @@ const AdminDashboard = () => {
                 <div key={reason.id} style={{
                   padding: '16px',
                   marginBottom: '12px',
-                  borderLeft: `4px solid ${selectedReasons.has(reason.id) ? '#667eea' : '#667eea'}`,
-                  background: selectedReasons.has(reason.id) ? '#e8eaf6' : '#f8f9fc',
+                  borderLeft: `4px solid ${selectedReasons.has(reason.id) ? '#1a3a5c' : '#1a3a5c'}`,
+                  background: selectedReasons.has(reason.id) ? '#e8eff7' : '#f8f9fc',
                   borderRadius: '6px',
                   fontSize: '0.9rem',
                   display: 'flex',
@@ -1191,14 +1239,14 @@ const AdminDashboard = () => {
                   />
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
-                      <strong style={{ color: '#667eea' }}>
+                      <strong style={{ color: '#1a3a5c' }}>
                         {reason.salesUserName || 'Unknown User'}
                       </strong>
                       <small style={{ color: '#999' }}>{formattedTime || 'N/A'}</small>
                     </div>
                     <div style={{ marginBottom: '8px', color: '#666' }}>
                       <span style={{ fontWeight: '600' }}>Requested Field: </span>
-                      <span style={{ background: '#e8eaf6', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                      <span style={{ background: '#e8eff7', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' }}>
                         {reason.field}
                     </span>
                     </div>
