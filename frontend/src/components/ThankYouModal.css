@@ -1,0 +1,198 @@
+/* Thank You Modal Backdrop */
+.thank-you-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Thank You Modal Container */
+.thank-you-modal {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  padding: 50px 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(26, 58, 92, 0.3), 0 0 0 1px rgba(212, 175, 55, 0.2);
+  text-align: center;
+  animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Luxury accent bar at top */
+.thank-you-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d4af37 0%, #1a3a5c 50%, #d4af37 100%);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Checkmark Container */
+.thank-you-checkmark {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.checkmark-icon {
+  width: 80px;
+  height: 80px;
+  color: #27ae60;
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.1), rgba(39, 174, 96, 0.05));
+  border-radius: 50%;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
+  animation: checkAnimation 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes checkAnimation {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+/* Title */
+.thank-you-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1a3a5c;
+  margin: 0 0 16px 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: -0.5px;
+}
+
+/* Message Text */
+.thank-you-message {
+  font-size: 16px;
+  color: #555;
+  margin: 16px 0 12px 0;
+  line-height: 1.6;
+}
+
+.thank-you-message strong {
+  color: #1a3a5c;
+  font-weight: 600;
+}
+
+/* Description Text */
+.thank-you-text {
+  font-size: 14px;
+  color: #777;
+  margin: 12px 0 28px 0;
+  line-height: 1.6;
+}
+
+/* Footer Section */
+.thank-you-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Countdown Text */
+.countdown-text {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+  font-weight: 500;
+}
+
+.countdown-number {
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Close Button */
+.thank-you-button {
+  background: linear-gradient(135deg, #1a3a5c 0%, #2a4f7f 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(26, 58, 92, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.thank-you-button:hover {
+  background: linear-gradient(135deg, #2a4f7f 0%, #1a3a5c 100%);
+  box-shadow: 0 6px 20px rgba(26, 58, 92, 0.4);
+  transform: translateY(-2px);
+}
+
+.thank-you-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(26, 58, 92, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .thank-you-modal {
+    padding: 40px 24px;
+    border-radius: 12px;
+  }
+
+  .thank-you-title {
+    font-size: 28px;
+  }
+
+  .checkmark-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .thank-you-message {
+    font-size: 15px;
+  }
+
+  .thank-you-button {
+    width: 100%;
+    padding: 14px 24px;
+  }
+}

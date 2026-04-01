@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './VisitorFormPage.css';
 import API_BASE_URL from '../config';
 import logo from '../images/logo.png';
+import ThankYouModal from './ThankYouModal';
 
 const VisitorForm = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,9 @@ const VisitorForm = () => {
     email: '',
     channelPartner: ''
   });
+
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [submittedName, setSubmittedName] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,7 +44,11 @@ const VisitorForm = () => {
       });
       const result = await response.json();
       if (result.success) {
-        alert('Form submitted successfully!');
+        // Show thank you modal instead of alert
+        setSubmittedName(formData.fullName);
+        setShowThankYou(true);
+        
+        // Clear form
         setFormData({
           fullName: '',
           gender: '',
@@ -57,6 +65,11 @@ const VisitorForm = () => {
       console.error('Error:', error);
       alert('Error submitting form: ' + error.message);
     }
+  };
+
+  const handleThankYouClose = () => {
+    setShowThankYou(false);
+    setSubmittedName("");
   };
 
   return (
@@ -165,6 +178,13 @@ const VisitorForm = () => {
           <button type="submit" className="visitor-form-submit">SUBMIT</button>
         </form>
       </div>
+
+      {/* Thank You Modal */}
+      <ThankYouModal
+        isOpen={showThankYou}
+        visitorName={submittedName}
+        onClose={handleThankYouClose}
+      />
     </div>
   );
 };
