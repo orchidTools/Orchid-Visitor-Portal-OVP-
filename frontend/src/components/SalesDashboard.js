@@ -130,6 +130,7 @@ const SalesDashboard = () => {
 
   const handleUpdateVisitorStatus = async (visitorId, status) => {
     try {
+      console.log(`Updating visitor ${visitorId} status to ${status}`);
       const response = await fetch(`${API_BASE_URL}/updateVisitorStatus`, {
         method: "POST",
         headers: {
@@ -143,15 +144,15 @@ const SalesDashboard = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        // Update local state
-        setVisitors(visitors.map(v => v.id === visitorId ? { 
-          ...v, 
-          status, 
-          statusChangedBy: salesUser.name,
-          statusChangedAt: new Date()
-        } : v));
+        console.log('✓ Status update successful:', data);
+        // Fetch fresh visitor data from backend to confirm update
+        const getResponse = await fetch(`${API_BASE_URL}/getVisitors`);
+        const freshVisitors = await getResponse.json();
+        setVisitors(freshVisitors);
+        console.log('✓ Visitor list refreshed with updated status');
       } else {
         alert(data.error || "Error updating status");
+        console.error('Status update failed:', data);
       }
     } catch (error) {
       console.error('Error updating visitor status:', error);
@@ -309,17 +310,20 @@ const SalesDashboard = () => {
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <select
-                        value={visitor.status || 'Follow-up Required'}
+                        value={visitor.status === 'Follow-up Required' ? 'Pending' : visitor.status || 'Pending'}
                         onChange={(e) => handleUpdateVisitorStatus(visitor.id, e.target.value)}
                         style={{
                           padding: '6px 10px',
                           borderRadius: '6px',
-                          border: '1px solid #e0e0e0',
+                          border: visitor.status === 'Pending' || visitor.status === 'Follow-up Required' || !visitor.status ? '2px solid #e74c3c' : '1px solid #e0e0e0',
                           fontSize: '0.85rem',
-                          backgroundColor: '#fafbff',
-                          cursor: 'pointer'
+                          backgroundColor: visitor.status === 'Pending' || visitor.status === 'Follow-up Required' || !visitor.status ? '#ffe6e6' : '#fafbff',
+                          cursor: 'pointer',
+                          color: visitor.status === 'Pending' || visitor.status === 'Follow-up Required' || !visitor.status ? '#e74c3c' : '#1a1a2e',
+                          fontWeight: visitor.status === 'Pending' || visitor.status === 'Follow-up Required' || !visitor.status ? '600' : 'normal'
                         }}
                       >
+                        <option value="Pending">⏳ Pending</option>
                         <option value="Follow-up Required">⏰ Follow-up Required</option>
                         <option value="Negotiation">💬 Negotiation</option>
                         <option value="Deal Closed">✓ Deal Closed</option>

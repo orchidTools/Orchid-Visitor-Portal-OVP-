@@ -18,6 +18,7 @@ const AdminDashboard = () => {
   const [dailyActivities, setDailyActivities] = useState([]);
   const [selectedSalesUserId, setSelectedSalesUserId] = useState(null);
   const [selectedSalesUserName, setSelectedSalesUserName] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [showSalesUserPopup, setShowSalesUserPopup] = useState(false);
   const [popupError, setPopupError] = useState("");
@@ -47,6 +48,34 @@ const AdminDashboard = () => {
       [userId]: !prev[userId]
     }));
   };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+const filteredVisitors = visitors
+  .filter((visitor) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      visitor.fullName?.toLowerCase().includes(query) ||
+      visitor.mobileNumber?.toLowerCase().includes(query)
+    );
+  })
+  .sort((a, b) => {
+    // Extract timestamps, handling both Firebase timestamp formats
+    const getTimestamp = (submissionDate) => {
+      if (submissionDate && submissionDate.seconds) {
+        return submissionDate.seconds;
+      } else if (submissionDate && submissionDate._seconds) {
+        return submissionDate._seconds;
+      }
+      return 0;
+    };
+    
+    const timeA = getTimestamp(a.submissionDate);
+    const timeB = getTimestamp(b.submissionDate);
+    return timeB - timeA; // Descending order (newest first)
+  });
 
   const toggleLogSelection = (logId) => {
     setSelectedLogs(prev => {
@@ -247,6 +276,14 @@ const AdminDashboard = () => {
     fetchPendingEdits();
     fetchSalesUsers();
     fetchReasons();
+
+    // Auto-refresh visitors every 3 seconds to show new submissions
+    const interval = setInterval(() => {
+      fetchVisitors();
+    }, 3000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, [navigate]);
 
   const fetchVisitors = async () => {
@@ -717,6 +754,13 @@ const AdminDashboard = () => {
         <div className="dashboard-section-header">
           <h2>Visitors</h2>
 
+          <input
+            type="text"
+            placeholder="Search visitors..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
           <button
             className="dashboard-download-btn"
             onClick={downloadExcel}
@@ -740,7 +784,6 @@ const AdminDashboard = () => {
                 <th>Address</th>
                 <th>Mobile</th>
                 <th>Email</th>
-                {/* Removed Govt ID fields */}
                 <th>Broker Name</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -749,7 +792,7 @@ const AdminDashboard = () => {
 
             <tbody>
 
-              {[...visitors].reverse().map((visitor) => {
+              {filteredVisitors.map((visitor) => {
 
                 const edit = pendingEdits.find(
                   (e) => e.visitorId === visitor.id
@@ -777,11 +820,10 @@ const AdminDashboard = () => {
                     <td>{visitor.permanentAddress || visitor.currentAddress || ""}</td>
                     <td>{visitor.mobileNumber}</td>
                     <td>{visitor.email}</td>
-                    {/* Removed Govt ID fields */}
                     <td>{visitor.brokerName}</td>
                     <td>
                       <div style={{ fontSize: '0.85rem' }}>
-                        <strong>{visitor.status || 'Follow-up Required'}</strong>
+                        <strong style={{ color: visitor.status === 'Pending' || visitor.status === 'Follow-up Required' || !visitor.status ? '#e74c3c' : '#1a3a5c' }}>{visitor.status === 'Follow-up Required' ? 'Pending' : visitor.status || 'Pending'}</strong>
                         {visitor.statusChangedBy ? (
                           <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '2px' }}>
                             <div>by {visitor.statusChangedBy}</div>
@@ -790,19 +832,15 @@ const AdminDashboard = () => {
                                 {(() => {
                                   try {
                                     let timestamp = visitor.statusChangedAt;
-                                    
-                                    // Handle Firestore timestamp object
                                     if (timestamp && typeof timestamp === 'object' && timestamp.seconds) {
                                       timestamp = timestamp.seconds * 1000;
                                     } else if (typeof timestamp === 'object' && timestamp._seconds) {
                                       timestamp = timestamp._seconds * 1000;
                                     }
-                                    
                                     const date = new Date(timestamp);
                                     if (isNaN(date.getTime())) {
                                       return 'Invalid date';
                                     }
-                                    
                                     return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}, ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                                   } catch (e) {
                                     return 'Date error';

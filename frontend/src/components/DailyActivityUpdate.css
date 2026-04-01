@@ -354,11 +354,9 @@
 
 /* Form Actions */
 .form-actions {
-  display: flex;
-  gap: 16px;
-  margin-top: 28px;
-  padding-top: 20px;
-  justify-content: flex-end;
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row-reverse;
 }
 
 .submit-btn {

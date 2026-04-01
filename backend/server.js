@@ -151,16 +151,43 @@ app.post('/logLogout', async (req, res) => {
 
 // Submit visitor form
 app.post('/submitVisitor', async (req, res) => {
-  const visitorData = req.body;
-  // Remove Govt ID fields if present
-  delete visitorData.governmentIdType;
-  delete visitorData.governmentIdNumber;
-  visitorData.status = 'Follow-up Required'; // Default status for new visitors
-  visitorData.submissionDate = admin.firestore.FieldValue.serverTimestamp();
   try {
-    const docRef = await db.collection('visitors').add(visitorData);
+    const visitorData = req.body;
+    
+    // Remove any potentially problematic fields
+    delete visitorData.governmentIdType;
+    delete visitorData.governmentIdNumber;
+    delete visitorData.status; // Remove if it somehow exists
+    
+    // Create clean data object with MANDATORY Pending status
+    const cleanData = {
+      fullName: visitorData.fullName || '',
+      gender: visitorData.gender || '',
+      nationality: visitorData.nationality || '',
+      permanentAddress: visitorData.permanentAddress || '',
+      currentAddress: visitorData.currentAddress || '',
+      mobileNumber: visitorData.mobileNumber || '',
+      email: visitorData.email || '',
+      brokerName: visitorData.brokerName || '',
+      fatherMotherName: visitorData.fatherMotherName || '',
+      brokerCompany: visitorData.brokerCompany || '',
+      brokerContact: visitorData.brokerContact || '',
+      status: 'Pending', // MANDATORY - Always set to Pending
+      submissionDate: admin.firestore.FieldValue.serverTimestamp()
+    };
+    
+    console.log('=== NEW VISITOR SUBMISSION ===');
+    console.log('Status being set to: Pending');
+    console.log('Saving visitor with data:', JSON.stringify(cleanData));
+    
+    const docRef = await db.collection('visitors').add(cleanData);
+    
+    console.log('✓ Visitor successfully saved with ID:', docRef.id);
+    console.log('✓ Status confirmed: Pending');
+    
     res.json({ success: true, id: docRef.id });
   } catch (error) {
+    console.error('ERROR submitting visitor:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -169,15 +196,47 @@ app.post('/submitVisitor', async (req, res) => {
 app.get('/getVisitors', async (req, res) => {
   try {
     const visitors = await db.collection('visitors').get();
-    const visitorList = visitors.docs.map(doc => {
+    const visitorList = [];
+    const batch = db.batch();
+    let fixedCount = 0;
+
+    // First pass: collect data and identify what needs fixing
+    visitors.docs.forEach(doc => {
       const data = doc.data();
       // Remove Govt ID fields from response
       delete data.governmentIdType;
       delete data.governmentIdNumber;
-      return { id: doc.id, ...data };
+      
+      // CRITICAL: Force status to ALWAYS be Pending
+      // Check if status is missing, empty, null, or set to anything other than a real status
+      const validStatuses = ['Pending', 'Follow-up Required', 'Negotiation', 'Deal Closed', 'Not Interested', 'Pending Approval'];
+      
+      if (!data.status || !validStatuses.includes(data.status)) {
+        // Status is invalid or missing - set to Pending
+        data.status = 'Pending';
+        batch.update(db.collection('visitors').doc(doc.id), { status: 'Pending' });
+        fixedCount++;
+        console.log(`Fixed visitor ${doc.id} status to Pending`);
+      } else if (data.status === 'Follow-up Required') {
+        // Convert old "Follow-up Required" to "Pending"
+        data.status = 'Pending';
+        batch.update(db.collection('visitors').doc(doc.id), { status: 'Pending' });
+        fixedCount++;
+        console.log(`Converted visitor ${doc.id} from Follow-up Required to Pending`);
+      }
+      
+      visitorList.push({ id: doc.id, ...data });
     });
+
+    // Commit all fixes
+    if (fixedCount > 0) {
+      await batch.commit();
+      console.log(`=== AUTO-FIX: Fixed ${fixedCount} visitors to Pending status ===`);
+    }
+    
     res.json(visitorList);
   } catch (error) {
+    console.error('Error fetching visitors:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -214,11 +273,25 @@ app.post('/updateVisitorStatus', async (req, res) => {
       return res.status(400).json({ error: 'Visitor ID and status are required' });
     }
     
-    await db.collection('visitors').doc(visitorId).update({ 
+    console.log(`=== UPDATING STATUS ===`);
+    console.log(`Visitor ID: ${visitorId}`);
+    console.log(`New Status: ${status}`);
+    console.log(`Changed By: ${changedBy}`);
+    
+    // Update visitor document
+    const updateData = {
       status,
       statusChangedBy: changedBy || 'Admin',
       statusChangedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
+    };
+    
+    await db.collection('visitors').doc(visitorId).update(updateData);
+    console.log(`✓ Visitor ${visitorId} status updated to ${status}`);
+    
+    // Verify the update was saved
+    const updatedDoc = await db.collection('visitors').doc(visitorId).get();
+    const savedData = updatedDoc.data();
+    console.log(`✓ Verification: Saved status is ${savedData.status}`);
     
     // Log the activity
     await db.collection('activityLogs').add({
@@ -228,9 +301,18 @@ app.post('/updateVisitorStatus', async (req, res) => {
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     
-    res.json({ success: true });
+    res.json({ 
+      success: true,
+      message: `Status updated to ${status}`,
+      updatedVisitor: {
+        id: visitorId,
+        status: savedData.status,
+        statusChangedBy: savedData.statusChangedBy,
+        statusChangedAt: savedData.statusChangedAt
+      }
+    });
   } catch (error) {
-    console.error('Error updating visitor status:', error);
+    console.error('ERROR updating visitor status:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -716,6 +798,52 @@ app.post('/deleteDailyActivity', async (req, res) => {
 });
 
 // ==================== END DAILY ACTIVITY ENDPOINTS ====================
+
+// MIGRATION: Clear all old visitors and reset
+app.get('/clearAllVisitors', async (req, res) => {
+  try {
+    const visitors = await db.collection('visitors').get();
+    const batch = db.batch();
+    let deletedCount = 0;
+
+    visitors.docs.forEach(doc => {
+      batch.delete(db.collection('visitors').doc(doc.id));
+      deletedCount++;
+    });
+
+    await batch.commit();
+    console.log(`Cleared ${deletedCount} visitors`);
+    res.json({ success: true, message: `Cleared ${deletedCount} visitors from database` });
+  } catch (error) {
+    console.error('Error clearing visitors:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Fix existing visitors status to Pending for new ones without proper status
+app.get('/fixVisitorStatus', async (req, res) => {
+  try {
+    const visitors = await db.collection('visitors').get();
+    const batch = db.batch();
+    let updatedCount = 0;
+
+    visitors.docs.forEach(doc => {
+      const data = doc.data();
+      // Update all visitors that have "Follow-up Required" or no status to "Pending"
+      if (!data.status || data.status === 'Follow-up Required') {
+        batch.update(db.collection('visitors').doc(doc.id), { status: 'Pending' });
+        updatedCount++;
+      }
+    });
+
+    await batch.commit();
+    console.log(`Fixed ${updatedCount} visitors to Pending status`);
+    res.json({ success: true, message: `Updated ${updatedCount} visitors to Pending status` });
+  } catch (error) {
+    console.error('Error fixing visitor status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
